@@ -12,15 +12,25 @@ fn local_session_file() -> String {
 }
 
 pub fn get_session_or_ask_human() -> String {
-  let session =
-    get_session_from_local_file()
+  get_session_from_local_file()
+  |> result.then(check_session)
+  |> result.lazy_or(fn() {
+    get_session_from_human_input()
     |> result.then(check_session)
-    |> result.lazy_or(fn() {
-      get_session_from_human_input()
-      |> result.then(check_session)
+    |> result.map(fn(s) {
+      write_session_to_local_file(s)
+      s
     })
-    |> result.lazy_unwrap(get_session_or_ask_human)
+  })
+  |> result.lazy_unwrap(get_session_or_ask_human)
+  |> string.trim
+}
 
+fn get_session_from_local_file() -> Result(String, Nil) {
+  simplifile.read(local_session_file()) |> result.nil_error
+}
+
+fn write_session_to_local_file(session: String) -> Nil {
   local_data.create_local_data_folder_if_not_exists()
   case simplifile.write(local_session_file(), session) {
     Error(_) ->
@@ -30,13 +40,6 @@ pub fn get_session_or_ask_human() -> String {
         "Session cookie written to local cache, and will be used in the future.",
       )
   }
-
-  session
-  |> string.trim
-}
-
-fn get_session_from_local_file() -> Result(String, Nil) {
-  simplifile.read(local_session_file()) |> result.nil_error
 }
 
 fn get_session_from_human_input() -> Result(String, Nil) {

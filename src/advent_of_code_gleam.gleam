@@ -1,7 +1,6 @@
-import common/adventofcode/auth
+import common/adventofcode/input
 import gleam/io
 
 pub fn main() {
-  let session = auth.get_session_or_ask_human()
-  io.println(session)
+  io.println(input.get_puzzle_input(2018, 1))
 }
