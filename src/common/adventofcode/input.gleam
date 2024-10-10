@@ -11,24 +11,21 @@ fn local_input_file(year: Int, day: Int) -> String {
   local_data.local_day_folder(year, day) <> "input.txt"
 }
 
-pub fn get_puzzle_input(year: Int, day: Int) -> String {
-  get_input_from_local_file(year, day)
-  |> result.lazy_or(fn() {
-    get_input_from_website(year, day)
-    |> result.map(fn(i) {
-      write_input_to_local_file(year, day, i)
-      i
-    })
-  })
-  |> result.lazy_unwrap(fn() {
-    io.println(
-      "Failed to get puzzle input for y"
-      <> int.to_string(year)
-      <> "d"
-      <> int.to_string(day),
-    )
-    ""
-  })
+pub type PuzzleInputError {
+  SessionError(auth.SessionCookieError)
+  FetchError
+}
+
+pub fn get_puzzle_input(year: Int, day: Int) -> Result(String, PuzzleInputError) {
+  case get_input_from_local_file(year, day) {
+    Ok(i) -> Ok(i)
+    Error(_) ->
+      get_input_from_website(year, day)
+      |> result.map(fn(i) {
+        write_input_to_local_file(year, day, i)
+        i
+      })
+  }
 }
 
 fn get_input_from_local_file(year: Int, day: Int) -> Result(String, Nil) {
@@ -52,7 +49,13 @@ fn write_input_to_local_file(year: Int, day: Int, input: String) -> Nil {
   }
 }
 
-fn get_input_from_website(year: Int, day: Int) -> Result(String, Nil) {
+fn get_input_from_website(
+  year: Int,
+  day: Int,
+) -> Result(String, PuzzleInputError) {
+  use session <- result.try(
+    auth.get_session_or_ask_human() |> result.map_error(SessionError),
+  )
   let assert Ok(r) =
     request.to(
       "https://adventofcode.com/"
@@ -61,11 +64,12 @@ fn get_input_from_website(year: Int, day: Int) -> Result(String, Nil) {
       <> int.to_string(day)
       <> "/input",
     )
-  let request =
-    request.set_cookie(r, "session", auth.get_session_or_ask_human())
-  use response <- result.try(httpc.send(request) |> result.nil_error)
+  let request = request.set_cookie(r, "session", session)
+  use response <- result.try(
+    httpc.send(request) |> result.map_error(fn(_) { FetchError }),
+  )
   case response.status {
     200 -> Ok(response.body)
-    _ -> Error(Nil)
+    _ -> Error(FetchError)
   }
 }

@@ -11,7 +11,11 @@ fn local_session_file() -> String {
   local_data.local_data_folder() <> "session_cookie.txt"
 }
 
-pub fn get_session_or_ask_human() -> String {
+pub type SessionCookieError {
+  SessionCookieError
+}
+
+pub fn get_session_or_ask_human() -> Result(String, SessionCookieError) {
   get_session_from_local_file()
   |> result.then(check_session)
   |> result.lazy_or(fn() {
@@ -22,8 +26,8 @@ pub fn get_session_or_ask_human() -> String {
       s
     })
   })
-  |> result.lazy_unwrap(get_session_or_ask_human)
-  |> string.trim
+  |> result.map(string.trim)
+  |> result.map_error(fn(_) { SessionCookieError })
 }
 
 fn get_session_from_local_file() -> Result(String, Nil) {
