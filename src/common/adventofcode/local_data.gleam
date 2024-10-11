@@ -18,3 +18,22 @@ pub fn create_local_day_folder_if_not_exists(year: Int, day: Int) -> Nil {
   simplifile.create_directory_all(local_day_folder(year, day))
   |> result.unwrap(Nil)
 }
+
+pub fn local_part_folder(year: Int, day: Int, part: Int) -> String {
+  local_data_folder()
+  <> int.to_string(year)
+  <> "/"
+  <> int.to_string(day)
+  <> "/"
+  <> int.to_string(part)
+  <> "/"
+}
+
+pub fn create_local_part_folder_if_not_exists(
+  year: Int,
+  day: Int,
+  part: Int,
+) -> Nil {
+  simplifile.create_directory_all(local_part_folder(year, day, part))
+  |> result.unwrap(Nil)
+}

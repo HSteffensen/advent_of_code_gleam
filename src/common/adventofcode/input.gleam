@@ -1,7 +1,5 @@
-import common/adventofcode/auth
+import common/adventofcode/advent_of_code
 import common/adventofcode/local_data
-import gleam/http/request
-import gleam/httpc
 import gleam/int
 import gleam/io
 import gleam/result
@@ -11,12 +9,10 @@ fn local_input_file(year: Int, day: Int) -> String {
   local_data.local_day_folder(year, day) <> "input.txt"
 }
 
-pub type PuzzleInputError {
-  SessionError(auth.SessionCookieError)
-  FetchError
-}
-
-pub fn get_puzzle_input(year: Int, day: Int) -> Result(String, PuzzleInputError) {
+pub fn get_puzzle_input(
+  year: Int,
+  day: Int,
+) -> Result(String, advent_of_code.AdventOfCodeError) {
   case get_input_from_local_file(year, day) {
     Ok(i) -> Ok(i)
     Error(_) ->
@@ -52,24 +48,8 @@ fn write_input_to_local_file(year: Int, day: Int, input: String) -> Nil {
 fn get_input_from_website(
   year: Int,
   day: Int,
-) -> Result(String, PuzzleInputError) {
-  use session <- result.try(
-    auth.get_session_or_ask_human() |> result.map_error(SessionError),
+) -> Result(String, advent_of_code.AdventOfCodeError) {
+  advent_of_code.get_from_website(
+    int.to_string(year) <> "/day/" <> int.to_string(day) <> "/input",
   )
-  let assert Ok(r) =
-    request.to(
-      "https://adventofcode.com/"
-      <> int.to_string(year)
-      <> "/day/"
-      <> int.to_string(day)
-      <> "/input",
-    )
-  let request = request.set_cookie(r, "session", session)
-  use response <- result.try(
-    httpc.send(request) |> result.map_error(fn(_) { FetchError }),
-  )
-  case response.status {
-    200 -> Ok(response.body)
-    _ -> Error(FetchError)
-  }
 }
