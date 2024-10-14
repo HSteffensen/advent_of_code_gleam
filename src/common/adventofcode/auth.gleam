@@ -55,10 +55,21 @@ fn get_session_from_human_input() -> Result(String, Nil) {
 
 fn check_session(session: String) -> Result(String, Nil) {
   let assert Ok(r) = request.to("https://adventofcode.com/2018/day/1/input")
-  let request = request.set_cookie(r, "session", session)
+  let request =
+    r
+    |> request.set_cookie("session", session)
+    |> set_user_agent
   use response <- result.try(httpc.send(request) |> result.nil_error)
   case response.status {
     200 -> Ok(session)
     _ -> Error(Nil)
   }
+}
+
+pub fn set_user_agent(request: request.Request(body)) {
+  request
+  |> request.set_header(
+    "User-Agent",
+    "https://github.com/HSteffensen/advent_of_code_gleam by henry@steffensenfamily.com",
+  )
 }
