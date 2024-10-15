@@ -1,5 +1,5 @@
-import common/adventofcode/advent_of_code
 import common/adventofcode/local_data
+import common/adventofcode/website
 import gleam/bool
 import gleam/erlang/process
 import gleam/int
@@ -29,7 +29,7 @@ pub fn submit_answer(
   day: Int,
   part: Int,
   answer: String,
-) -> Result(Bool, advent_of_code.AdventOfCodeError) {
+) -> Result(Bool, website.AdventOfCodeError) {
   let is_known_wrong =
     get_known_wrong_answers(year, day, part) |> list.contains(answer)
   use <- bool.lazy_guard(is_known_wrong, fn() {
@@ -101,8 +101,8 @@ fn get_website_correct_answer(
   year: Int,
   day: Int,
   part: Int,
-) -> Result(String, advent_of_code.AdventOfCodeError) {
-  use puzzle_html_text <- result.try(advent_of_code.get_from_website(
+) -> Result(String, website.AdventOfCodeError) {
+  use puzzle_html_text <- result.try(website.get_from_website(
     int.to_string(year) <> "/day/" <> int.to_string(day),
   ))
   let html = html_parser.as_list(puzzle_html_text)
@@ -134,7 +134,7 @@ fn get_website_correct_answer(
 
   case answer_element {
     Ok(html_parser.Content(text)) -> Ok(text)
-    _ -> Error(advent_of_code.FetchError)
+    _ -> Error(website.FetchError)
   }
 }
 
@@ -168,8 +168,8 @@ fn submit_answer_to_website(
   day: Int,
   part: Int,
   answer: String,
-) -> Result(Bool, advent_of_code.AdventOfCodeError) {
-  use html_string <- result.try(advent_of_code.post_to_website(
+) -> Result(Bool, website.AdventOfCodeError) {
+  use html_string <- result.try(website.post_to_website(
     int.to_string(year) <> "/day/" <> int.to_string(day) <> "/answer",
     "level=" <> int.to_string(part) <> "&answer=" <> answer,
   ))
@@ -184,7 +184,7 @@ fn submit_answer_to_website(
       io.println("Wrong answer extra info: '" <> first <> "'")
       Ok(False)
     }
-    _, _ -> Error(advent_of_code.FetchError)
+    _, _ -> Error(website.FetchError)
   }
 }
 

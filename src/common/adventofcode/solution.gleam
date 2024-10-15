@@ -1,7 +1,7 @@
-import common/adventofcode/advent_of_code
 import common/adventofcode/answer
 import common/adventofcode/examples
 import common/adventofcode/input
+import common/adventofcode/website
 import gleam/bool
 import gleam/function
 import gleam/int
@@ -14,7 +14,7 @@ pub fn solve_advent(
   day: Int,
   part1: fn(String) -> String,
   part2: fn(String) -> String,
-) -> Result(Bool, advent_of_code.AdventOfCodeError) {
+) -> Result(Bool, website.AdventOfCodeError) {
   let day_string = "y" <> int.to_string(year) <> "d" <> int.to_string(day)
   io.println("Running solution for " <> day_string)
   use part1_solved <- result.try(solve_advent_part(year, day, 1, part1))
@@ -38,7 +38,7 @@ fn solve_advent_part(
   day: Int,
   part: Int,
   solution: fn(String) -> String,
-) -> Result(Bool, advent_of_code.AdventOfCodeError) {
+) -> Result(Bool, website.AdventOfCodeError) {
   use examples <- result.try(examples.get_examples_or_ask_human(year, day, part))
   let pass_examples =
     examples

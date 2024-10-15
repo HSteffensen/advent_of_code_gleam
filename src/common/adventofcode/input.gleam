@@ -1,5 +1,5 @@
-import common/adventofcode/advent_of_code
 import common/adventofcode/local_data
+import common/adventofcode/website
 import gleam/int
 import gleam/io
 import gleam/result
@@ -12,7 +12,7 @@ fn local_input_file(year: Int, day: Int) -> String {
 pub fn get_puzzle_input(
   year: Int,
   day: Int,
-) -> Result(String, advent_of_code.AdventOfCodeError) {
+) -> Result(String, website.AdventOfCodeError) {
   case get_input_from_local_file(year, day) {
     Ok(i) -> Ok(i)
     Error(_) ->
@@ -48,8 +48,8 @@ fn write_input_to_local_file(year: Int, day: Int, input: String) -> Nil {
 fn get_input_from_website(
   year: Int,
   day: Int,
-) -> Result(String, advent_of_code.AdventOfCodeError) {
-  advent_of_code.get_from_website(
+) -> Result(String, website.AdventOfCodeError) {
+  website.get_from_website(
     int.to_string(year) <> "/day/" <> int.to_string(day) <> "/input",
   )
 }

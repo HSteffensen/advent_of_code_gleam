@@ -1,5 +1,5 @@
-import common/adventofcode/advent_of_code
 import common/adventofcode/local_data
+import common/adventofcode/website
 import gleam/erlang
 import gleam/int
 import gleam/io
@@ -41,7 +41,7 @@ pub fn get_examples_or_ask_human(
   year: Int,
   day: Int,
   part: Int,
-) -> Result(List(PuzzleExample), advent_of_code.AdventOfCodeError) {
+) -> Result(List(PuzzleExample), website.AdventOfCodeError) {
   let examples = collect_examples_from_local_files(year, day, part, 1, [])
   case examples {
     [] -> {
@@ -131,8 +131,8 @@ fn get_examples_from_website_and_human(
   year: Int,
   day: Int,
   part: Int,
-) -> Result(List(PuzzleExample), advent_of_code.AdventOfCodeError) {
-  use puzzle_html_text <- result.try(advent_of_code.get_from_website(
+) -> Result(List(PuzzleExample), website.AdventOfCodeError) {
+  use puzzle_html_text <- result.try(website.get_from_website(
     int.to_string(year) <> "/day/" <> int.to_string(day),
   ))
   let example_candidates =
