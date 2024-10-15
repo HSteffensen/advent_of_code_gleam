@@ -161,7 +161,22 @@ fn get_examples_from_website_and_human(
       let #(i, a) = m
       #(n + 1, PuzzleExample(n, i, a))
     })
-  Ok(examples)
+  case examples {
+    [] -> {
+      io.println(
+        "No Examples found for "
+        <> advent_of_code.day_string(puzzle)
+        <> "p"
+        <> advent_of_code.part_int_string(part)
+        <> ".\nManually put example input into "
+        <> local_example_input_file(puzzle, part, 1)
+        <> " and answer into "
+        <> local_example_answer_file(puzzle, part, 1),
+      )
+      Error(website.FetchError)
+    }
+    _ -> Ok(examples)
+  }
 }
 
 fn find_code_blocks_text(
