@@ -6,6 +6,7 @@ import gleam/erlang/process
 import gleam/int
 import gleam/io
 import gleam/list
+import gleam/option
 import gleam/result
 import gleam/string
 import html_parser
@@ -42,13 +43,18 @@ pub fn submit_answer(
     get_known_correct_answer(puzzle, part)
     |> result.map(fn(a) { a == answer })
   {
-    Ok(a) -> Ok(a)
+    Ok(a) -> Ok(option.Some(a))
     Error(_) -> {
       // check known correct answer from website, write to correct answer file. compare against that.
       get_website_correct_answer(puzzle, part)
       |> result.map(fn(a) {
-        write_correct_answer_to_local_file(puzzle, part, a)
-        a == answer
+        case a {
+          option.None -> option.None
+          option.Some(b) -> {
+            write_correct_answer_to_local_file(puzzle, part, b)
+            option.Some(b == answer)
+          }
+        }
       })
     }
   }
@@ -59,20 +65,23 @@ pub fn submit_answer(
       e
     }),
   )
-  use <- bool.lazy_guard(is_known_correct, fn() {
+
+  use <- bool.lazy_guard(is_known_correct |> option.is_some, fn() {
     io.println("Answer known to be correct from previous submission.")
-    Ok(True)
+    Ok(is_known_correct |> option.unwrap(True))
   })
 
   // check one minute between submissions, sleep until minute is ended
   ensure_one_minute_between_submissions()
   // submit answer to AoC website. check if correct or wrong. if wrong, append to wrong answers file. if right, write to correct answer file.
 
-  use is_correct_submitted <- result.try(submit_answer_to_website(
-    puzzle,
-    part,
-    answer,
-  ))
+  use is_correct_submitted <- result.try(
+    submit_answer_to_website(puzzle, part, answer)
+    |> result.map_error(fn(e) {
+      io.println("Failed to submit answer to website.")
+      e
+    }),
+  )
   case is_correct_submitted {
     True -> {
       io.println("Submitted correct answer!!! :D")
@@ -104,9 +113,13 @@ fn get_known_correct_answer(
 fn get_website_correct_answer(
   puzzle: PuzzleId,
   part: PuzzlePart,
-) -> Result(String, website.AdventOfCodeError) {
+) -> Result(option.Option(String), website.AdventOfCodeError) {
   use puzzle_html_text <- result.try(
-    website.get_from_website(advent_of_code.day_path(puzzle)),
+    website.get_from_website(advent_of_code.day_path(puzzle))
+    |> result.map_error(fn(e) {
+      io.println("Failed to get puzzle text.")
+      e
+    }),
   )
   let html = html_parser.as_list(puzzle_html_text)
   let answer_element =
@@ -134,10 +147,10 @@ fn get_website_correct_answer(
     |> list.drop(2)
     |> list.first
 
-  case answer_element {
-    Ok(html_parser.Content(text)) -> Ok(text)
-    _ -> Error(website.FetchError)
-  }
+  Ok(case answer_element {
+    Ok(html_parser.Content(text)) -> option.Some(text)
+    _ -> option.None
+  })
 }
 
 fn ensure_one_minute_between_submissions() -> Nil {
@@ -170,10 +183,7 @@ fn submit_answer_to_website(
   part: PuzzlePart,
   answer: String,
 ) -> Result(Bool, website.AdventOfCodeError) {
-  use html_string <- result.try(website.post_to_website(
-    advent_of_code.day_path(puzzle) <> "/answer",
-    "level=" <> advent_of_code.part_int_string(part) <> "&answer=" <> answer,
-  ))
+  use html_string <- result.try(website.post_answer(puzzle, part, answer))
   let correct = html_string |> string.contains("That's the right answer")
   let wrong = html_string |> string.contains("That's not the right answer")
   case correct, wrong {

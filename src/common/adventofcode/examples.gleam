@@ -163,6 +163,7 @@ fn get_examples_from_website_and_human(
     })
   case examples {
     [] -> {
+      local_data.create_local_part_folder_if_not_exists(puzzle, part)
       io.println(
         "No Examples found for "
         <> advent_of_code.day_string(puzzle)
