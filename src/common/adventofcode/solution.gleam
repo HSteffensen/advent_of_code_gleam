@@ -1,3 +1,4 @@
+import common/adventofcode/advent_of_code.{type PuzzlePart}
 import common/adventofcode/answer
 import common/adventofcode/examples
 import common/adventofcode/input
@@ -17,13 +18,18 @@ pub fn solve_advent(
 ) -> Result(Bool, website.AdventOfCodeError) {
   let day_string = "y" <> int.to_string(year) <> "d" <> int.to_string(day)
   io.println("Running solution for " <> day_string)
-  use part1_solved <- result.try(solve_advent_part(year, day, 1, part1))
+  use part1_solved <- result.try(solve_advent_part(
+    year,
+    day,
+    advent_of_code.Part1,
+    part1,
+  ))
   use <- bool.lazy_guard(part1_solved, fn() {
     io.println(day_string <> " part 1 wrong.")
     Ok(False)
   })
   io.println(day_string <> " part 1 correct!")
-  solve_advent_part(year, day, 2, part2)
+  solve_advent_part(year, day, advent_of_code.Part2, part2)
   |> result.map(fn(part2_solved) {
     case part2_solved {
       True -> io.println(day_string <> " part 2 correct!")
@@ -36,7 +42,7 @@ pub fn solve_advent(
 fn solve_advent_part(
   year: Int,
   day: Int,
-  part: Int,
+  part: PuzzlePart,
   solution: fn(String) -> String,
 ) -> Result(Bool, website.AdventOfCodeError) {
   use examples <- result.try(examples.get_examples_or_ask_human(year, day, part))

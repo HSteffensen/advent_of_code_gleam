@@ -1,3 +1,4 @@
+import common/adventofcode/advent_of_code
 import common/adventofcode/auth
 import common/adventofcode/examples
 import common/adventofcode/input
@@ -12,11 +13,11 @@ pub fn main() {
     Error(_) -> io.println("Failed to get puzzle input.")
     Ok(_) -> io.println("Puzzle input works good.")
   }
-  case examples.get_examples_or_ask_human(2023, 1, 1) {
+  case examples.get_examples_or_ask_human(2023, 1, advent_of_code.Part1) {
     Error(_) -> io.println("Failed to get puzzle examples.")
     Ok(_) -> io.println("Puzzle examples works good.")
   }
-  case examples.get_examples_or_ask_human(2023, 1, 2) {
+  case examples.get_examples_or_ask_human(2023, 1, advent_of_code.Part2) {
     Error(_) -> io.println("Failed to get puzzle examples.")
     Ok(_) -> io.println("Puzzle examples works good.")
   }

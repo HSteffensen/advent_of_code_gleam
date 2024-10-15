@@ -1,3 +1,4 @@
+import common/adventofcode/advent_of_code.{type PuzzlePart}
 import common/adventofcode/local_data
 import common/adventofcode/website
 import gleam/erlang
@@ -16,7 +17,7 @@ pub type PuzzleExample {
 fn local_example_input_file(
   year: Int,
   day: Int,
-  part: Int,
+  part: PuzzlePart,
   number: Int,
 ) -> String {
   local_data.local_part_folder(year, day, part)
@@ -28,7 +29,7 @@ fn local_example_input_file(
 fn local_example_answer_file(
   year: Int,
   day: Int,
-  part: Int,
+  part: PuzzlePart,
   number: Int,
 ) -> String {
   local_data.local_part_folder(year, day, part)
@@ -40,7 +41,7 @@ fn local_example_answer_file(
 pub fn get_examples_or_ask_human(
   year: Int,
   day: Int,
-  part: Int,
+  part: PuzzlePart,
 ) -> Result(List(PuzzleExample), website.AdventOfCodeError) {
   let examples = collect_examples_from_local_files(year, day, part, 1, [])
   case examples {
@@ -58,7 +59,7 @@ pub fn get_examples_or_ask_human(
 fn collect_examples_from_local_files(
   year: Int,
   day: Int,
-  part: Int,
+  part: PuzzlePart,
   number: Int,
   collected: List(PuzzleExample),
 ) -> List(PuzzleExample) {
@@ -90,7 +91,7 @@ fn collect_examples_from_local_files(
 fn write_examples_to_local_file(
   year: Int,
   day: Int,
-  part: Int,
+  part: PuzzlePart,
   examples: List(PuzzleExample),
 ) -> Nil {
   let date_str = "y" <> int.to_string(year) <> "d" <> int.to_string(day)
@@ -130,7 +131,7 @@ fn write_examples_to_local_file(
 fn get_examples_from_website_and_human(
   year: Int,
   day: Int,
-  part: Int,
+  part: PuzzlePart,
 ) -> Result(List(PuzzleExample), website.AdventOfCodeError) {
   use puzzle_html_text <- result.try(website.get_from_website(
     int.to_string(year) <> "/day/" <> int.to_string(day),
@@ -139,15 +140,14 @@ fn get_examples_from_website_and_human(
     html_parser.as_list(puzzle_html_text)
     |> find_code_blocks_text(part)
   let example_candidates = case part {
-    1 -> example_candidates
-    2 ->
+    advent_of_code.Part1 -> example_candidates
+    advent_of_code.Part2 ->
       list.append(
-        get_examples_or_ask_human(year, day, 1)
+        get_examples_or_ask_human(year, day, advent_of_code.Part1)
           |> result.unwrap([])
           |> list.map(fn(e) { e.input }),
         example_candidates,
       )
-    _ -> panic
   }
   let #(_, examples) =
     example_candidates
@@ -178,19 +178,19 @@ fn get_examples_from_website_and_human(
 
 fn find_code_blocks_text(
   elements: List(html_parser.Element),
-  part: Int,
+  part: PuzzlePart,
 ) -> List(String) {
   let elements_after_day_description =
     elements
     |> list.drop_while(fn(e) {
       case e, part {
-        html_parser.StartElement("h2", _, _), 1 -> False
+        html_parser.StartElement("h2", _, _), advent_of_code.Part1 -> False
         html_parser.StartElement(
           "h2",
           [html_parser.Attribute("id", "part2")],
           _,
         ),
-          2
+          advent_of_code.Part2
         -> False
         _, _ -> True
       }

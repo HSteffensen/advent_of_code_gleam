@@ -1,3 +1,4 @@
+import common/adventofcode/advent_of_code.{type PuzzlePart}
 import common/adventofcode/local_data
 import common/adventofcode/website
 import gleam/bool
@@ -12,11 +13,11 @@ import simplifile
 import tempo/datetime
 import tempo/period
 
-fn local_wrong_answers_file(year: Int, day: Int, part: Int) -> String {
+fn local_wrong_answers_file(year: Int, day: Int, part: PuzzlePart) -> String {
   local_data.local_part_folder(year, day, part) <> "wrong_answers.txt"
 }
 
-fn local_correct_answer_file(year: Int, day: Int, part: Int) -> String {
+fn local_correct_answer_file(year: Int, day: Int, part: PuzzlePart) -> String {
   local_data.local_part_folder(year, day, part) <> "correct_answer.txt"
 }
 
@@ -27,7 +28,7 @@ fn local_submission_time_file() -> String {
 pub fn submit_answer(
   year: Int,
   day: Int,
-  part: Int,
+  part: PuzzlePart,
   answer: String,
 ) -> Result(Bool, website.AdventOfCodeError) {
   let is_known_wrong =
@@ -81,7 +82,11 @@ pub fn submit_answer(
   Ok(is_correct_submitted)
 }
 
-fn get_known_wrong_answers(year: Int, day: Int, part: Int) -> List(String) {
+fn get_known_wrong_answers(
+  year: Int,
+  day: Int,
+  part: PuzzlePart,
+) -> List(String) {
   case simplifile.read(local_wrong_answers_file(year, day, part)) {
     Error(_) -> []
     Ok(text) -> text |> string.trim |> string.split(on: "\n")
@@ -91,7 +96,7 @@ fn get_known_wrong_answers(year: Int, day: Int, part: Int) -> List(String) {
 fn get_known_correct_answer(
   year: Int,
   day: Int,
-  part: Int,
+  part: PuzzlePart,
 ) -> Result(String, Nil) {
   simplifile.read(local_correct_answer_file(year, day, part))
   |> result.nil_error
@@ -100,7 +105,7 @@ fn get_known_correct_answer(
 fn get_website_correct_answer(
   year: Int,
   day: Int,
-  part: Int,
+  part: PuzzlePart,
 ) -> Result(String, website.AdventOfCodeError) {
   use puzzle_html_text <- result.try(website.get_from_website(
     int.to_string(year) <> "/day/" <> int.to_string(day),
@@ -108,8 +113,8 @@ fn get_website_correct_answer(
   let html = html_parser.as_list(puzzle_html_text)
   let answer_element =
     case part {
-      1 -> html
-      2 ->
+      advent_of_code.Part1 -> html
+      advent_of_code.Part2 ->
         html
         |> list.drop_while(fn(element) {
           case element {
@@ -121,7 +126,6 @@ fn get_website_correct_answer(
             _ -> True
           }
         })
-      _ -> panic
     }
     |> list.drop_while(fn(element) {
       case element {
@@ -166,12 +170,12 @@ fn ensure_one_minute_between_submissions() -> Nil {
 fn submit_answer_to_website(
   year: Int,
   day: Int,
-  part: Int,
+  part: PuzzlePart,
   answer: String,
 ) -> Result(Bool, website.AdventOfCodeError) {
   use html_string <- result.try(website.post_to_website(
     int.to_string(year) <> "/day/" <> int.to_string(day) <> "/answer",
-    "level=" <> int.to_string(part) <> "&answer=" <> answer,
+    "level=" <> advent_of_code.part_int_string(part) <> "&answer=" <> answer,
   ))
   let correct = html_string |> string.contains("That's the right answer")
   let wrong = html_string |> string.contains("That's not the right answer")
@@ -191,7 +195,7 @@ fn submit_answer_to_website(
 fn write_wrong_answer_to_local_file(
   year: Int,
   day: Int,
-  part: Int,
+  part: PuzzlePart,
   answer: String,
 ) -> Nil {
   let date_str =
@@ -200,7 +204,7 @@ fn write_wrong_answer_to_local_file(
     <> "d"
     <> int.to_string(day)
     <> "p"
-    <> int.to_string(part)
+    <> advent_of_code.part_int_string(part)
   case
     simplifile.append(local_wrong_answers_file(year, day, part), answer <> "\n")
   {
@@ -216,7 +220,7 @@ fn write_wrong_answer_to_local_file(
 fn write_correct_answer_to_local_file(
   year: Int,
   day: Int,
-  part: Int,
+  part: PuzzlePart,
   answer: String,
 ) -> Nil {
   let date_str =
@@ -225,7 +229,7 @@ fn write_correct_answer_to_local_file(
     <> "d"
     <> int.to_string(day)
     <> "p"
-    <> int.to_string(part)
+    <> advent_of_code.part_int_string(part)
   case simplifile.write(local_correct_answer_file(year, day, part), answer) {
     Error(_) ->
       io.println(

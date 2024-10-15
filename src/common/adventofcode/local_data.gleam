@@ -1,3 +1,4 @@
+import common/adventofcode/advent_of_code.{type PuzzlePart}
 import gleam/int
 import gleam/result
 import simplifile
@@ -19,20 +20,20 @@ pub fn create_local_day_folder_if_not_exists(year: Int, day: Int) -> Nil {
   |> result.unwrap(Nil)
 }
 
-pub fn local_part_folder(year: Int, day: Int, part: Int) -> String {
+pub fn local_part_folder(year: Int, day: Int, part: PuzzlePart) -> String {
   local_data_folder()
   <> int.to_string(year)
   <> "/"
   <> int.to_string(day)
   <> "/"
-  <> int.to_string(part)
+  <> advent_of_code.part_int_string(part)
   <> "/"
 }
 
 pub fn create_local_part_folder_if_not_exists(
   year: Int,
   day: Int,
-  part: Int,
+  part: PuzzlePart,
 ) -> Nil {
   simplifile.create_directory_all(local_part_folder(year, day, part))
   |> result.unwrap(Nil)
