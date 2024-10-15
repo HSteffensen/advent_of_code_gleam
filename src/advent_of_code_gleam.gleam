@@ -1,23 +1,28 @@
 import common/adventofcode/advent_of_code
-import common/adventofcode/auth
 import common/adventofcode/examples
 import common/adventofcode/input
 import gleam/io
 
 pub fn main() {
-  case auth.get_session_or_ask_human() {
-    Error(_) -> io.println("Failed to get session cookie.")
-    Ok(_) -> io.println("Session cookie works good.")
-  }
-  case input.get_puzzle_input(2023, 1) {
+  case input.get_puzzle_input(advent_of_code.PuzzleId(2018, 1)) {
     Error(_) -> io.println("Failed to get puzzle input.")
     Ok(_) -> io.println("Puzzle input works good.")
   }
-  case examples.get_examples_or_ask_human(2023, 1, advent_of_code.Part1) {
+  case
+    examples.get_examples_or_ask_human(
+      advent_of_code.PuzzleId(2018, 1),
+      advent_of_code.Part1,
+    )
+  {
     Error(_) -> io.println("Failed to get puzzle examples.")
     Ok(_) -> io.println("Puzzle examples works good.")
   }
-  case examples.get_examples_or_ask_human(2023, 1, advent_of_code.Part2) {
+  case
+    examples.get_examples_or_ask_human(
+      advent_of_code.PuzzleId(2018, 1),
+      advent_of_code.Part2,
+    )
+  {
     Error(_) -> io.println("Failed to get puzzle examples.")
     Ok(_) -> io.println("Puzzle examples works good.")
   }

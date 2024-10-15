@@ -1,4 +1,4 @@
-import common/adventofcode/advent_of_code.{type PuzzlePart}
+import common/adventofcode/advent_of_code.{type PuzzleId, type PuzzlePart}
 import common/adventofcode/local_data
 import common/adventofcode/website
 import gleam/bool
@@ -13,12 +13,12 @@ import simplifile
 import tempo/datetime
 import tempo/period
 
-fn local_wrong_answers_file(year: Int, day: Int, part: PuzzlePart) -> String {
-  local_data.local_part_folder(year, day, part) <> "wrong_answers.txt"
+fn local_wrong_answers_file(puzzle: PuzzleId, part: PuzzlePart) -> String {
+  local_data.local_part_folder(puzzle, part) <> "wrong_answers.txt"
 }
 
-fn local_correct_answer_file(year: Int, day: Int, part: PuzzlePart) -> String {
-  local_data.local_part_folder(year, day, part) <> "correct_answer.txt"
+fn local_correct_answer_file(puzzle: PuzzleId, part: PuzzlePart) -> String {
+  local_data.local_part_folder(puzzle, part) <> "correct_answer.txt"
 }
 
 fn local_submission_time_file() -> String {
@@ -26,13 +26,12 @@ fn local_submission_time_file() -> String {
 }
 
 pub fn submit_answer(
-  year: Int,
-  day: Int,
+  puzzle: PuzzleId,
   part: PuzzlePart,
   answer: String,
 ) -> Result(Bool, website.AdventOfCodeError) {
   let is_known_wrong =
-    get_known_wrong_answers(year, day, part) |> list.contains(answer)
+    get_known_wrong_answers(puzzle, part) |> list.contains(answer)
   use <- bool.lazy_guard(is_known_wrong, fn() {
     io.println("Answer known to be wrong from previous submission.")
     Ok(False)
@@ -40,15 +39,15 @@ pub fn submit_answer(
 
   // check known correct answer file. compare against that.
   let is_known_correct = case
-    get_known_correct_answer(year, day, part)
+    get_known_correct_answer(puzzle, part)
     |> result.map(fn(a) { a == answer })
   {
     Ok(a) -> Ok(a)
     Error(_) -> {
       // check known correct answer from website, write to correct answer file. compare against that.
-      get_website_correct_answer(year, day, part)
+      get_website_correct_answer(puzzle, part)
       |> result.map(fn(a) {
-        write_correct_answer_to_local_file(year, day, part, a)
+        write_correct_answer_to_local_file(puzzle, part, a)
         a == answer
       })
     }
@@ -64,52 +63,45 @@ pub fn submit_answer(
   // submit answer to AoC website. check if correct or wrong. if wrong, append to wrong answers file. if right, write to correct answer file.
 
   use is_correct_submitted <- result.try(submit_answer_to_website(
-    year,
-    day,
+    puzzle,
     part,
     answer,
   ))
   case is_correct_submitted {
     True -> {
       io.println("Submitted correct answer!!! :D")
-      write_correct_answer_to_local_file(year, day, part, answer)
+      write_correct_answer_to_local_file(puzzle, part, answer)
     }
     False -> {
       io.println("Submitted wrong answer :(")
-      write_wrong_answer_to_local_file(year, day, part, answer)
+      write_wrong_answer_to_local_file(puzzle, part, answer)
     }
   }
   Ok(is_correct_submitted)
 }
 
-fn get_known_wrong_answers(
-  year: Int,
-  day: Int,
-  part: PuzzlePart,
-) -> List(String) {
-  case simplifile.read(local_wrong_answers_file(year, day, part)) {
+fn get_known_wrong_answers(puzzle: PuzzleId, part: PuzzlePart) -> List(String) {
+  case simplifile.read(local_wrong_answers_file(puzzle, part)) {
     Error(_) -> []
     Ok(text) -> text |> string.trim |> string.split(on: "\n")
   }
 }
 
 fn get_known_correct_answer(
-  year: Int,
-  day: Int,
+  puzzle: PuzzleId,
   part: PuzzlePart,
 ) -> Result(String, Nil) {
-  simplifile.read(local_correct_answer_file(year, day, part))
+  simplifile.read(local_correct_answer_file(puzzle, part))
   |> result.nil_error
 }
 
 fn get_website_correct_answer(
-  year: Int,
-  day: Int,
+  puzzle: PuzzleId,
   part: PuzzlePart,
 ) -> Result(String, website.AdventOfCodeError) {
-  use puzzle_html_text <- result.try(website.get_from_website(
-    int.to_string(year) <> "/day/" <> int.to_string(day),
-  ))
+  use puzzle_html_text <- result.try(
+    website.get_from_website(advent_of_code.day_path(puzzle)),
+  )
   let html = html_parser.as_list(puzzle_html_text)
   let answer_element =
     case part {
@@ -168,13 +160,12 @@ fn ensure_one_minute_between_submissions() -> Nil {
 }
 
 fn submit_answer_to_website(
-  year: Int,
-  day: Int,
+  puzzle: PuzzleId,
   part: PuzzlePart,
   answer: String,
 ) -> Result(Bool, website.AdventOfCodeError) {
   use html_string <- result.try(website.post_to_website(
-    int.to_string(year) <> "/day/" <> int.to_string(day) <> "/answer",
+    advent_of_code.day_path(puzzle) <> "/answer",
     "level=" <> advent_of_code.part_int_string(part) <> "&answer=" <> answer,
   ))
   let correct = html_string |> string.contains("That's the right answer")
@@ -193,20 +184,16 @@ fn submit_answer_to_website(
 }
 
 fn write_wrong_answer_to_local_file(
-  year: Int,
-  day: Int,
+  puzzle: PuzzleId,
   part: PuzzlePart,
   answer: String,
 ) -> Nil {
   let date_str =
-    "y"
-    <> int.to_string(year)
-    <> "d"
-    <> int.to_string(day)
+    advent_of_code.day_string(puzzle)
     <> "p"
     <> advent_of_code.part_int_string(part)
   case
-    simplifile.append(local_wrong_answers_file(year, day, part), answer <> "\n")
+    simplifile.append(local_wrong_answers_file(puzzle, part), answer <> "\n")
   {
     Error(_) ->
       io.println(
@@ -218,19 +205,15 @@ fn write_wrong_answer_to_local_file(
 }
 
 fn write_correct_answer_to_local_file(
-  year: Int,
-  day: Int,
+  puzzle: PuzzleId,
   part: PuzzlePart,
   answer: String,
 ) -> Nil {
   let date_str =
-    "y"
-    <> int.to_string(year)
-    <> "d"
-    <> int.to_string(day)
+    advent_of_code.day_string(puzzle)
     <> "p"
     <> advent_of_code.part_int_string(part)
-  case simplifile.write(local_correct_answer_file(year, day, part), answer) {
+  case simplifile.write(local_correct_answer_file(puzzle, part), answer) {
     Error(_) ->
       io.println(
         "Failed to write correct answer for " <> date_str <> " to local cache.",

@@ -1,4 +1,4 @@
-import common/adventofcode/advent_of_code.{type PuzzlePart}
+import common/adventofcode/advent_of_code.{type PuzzleId, type PuzzlePart}
 import common/adventofcode/local_data
 import common/adventofcode/website
 import gleam/erlang
@@ -15,40 +15,37 @@ pub type PuzzleExample {
 }
 
 fn local_example_input_file(
-  year: Int,
-  day: Int,
+  puzzle: PuzzleId,
   part: PuzzlePart,
   number: Int,
 ) -> String {
-  local_data.local_part_folder(year, day, part)
+  local_data.local_part_folder(puzzle, part)
   <> "example_"
   <> int.to_string(number)
   <> "_input.txt"
 }
 
 fn local_example_answer_file(
-  year: Int,
-  day: Int,
+  puzzle: PuzzleId,
   part: PuzzlePart,
   number: Int,
 ) -> String {
-  local_data.local_part_folder(year, day, part)
+  local_data.local_part_folder(puzzle, part)
   <> "example_"
   <> int.to_string(number)
   <> "_answer.txt"
 }
 
 pub fn get_examples_or_ask_human(
-  year: Int,
-  day: Int,
+  puzzle: PuzzleId,
   part: PuzzlePart,
 ) -> Result(List(PuzzleExample), website.AdventOfCodeError) {
-  let examples = collect_examples_from_local_files(year, day, part, 1, [])
+  let examples = collect_examples_from_local_files(puzzle, part, 1, [])
   case examples {
     [] -> {
-      get_examples_from_website_and_human(year, day, part)
+      get_examples_from_website_and_human(puzzle, part)
       |> result.map(fn(l) {
-        write_examples_to_local_file(year, day, part, l)
+        write_examples_to_local_file(puzzle, part, l)
         l
       })
     }
@@ -57,18 +54,16 @@ pub fn get_examples_or_ask_human(
 }
 
 fn collect_examples_from_local_files(
-  year: Int,
-  day: Int,
+  puzzle: PuzzleId,
   part: PuzzlePart,
   number: Int,
   collected: List(PuzzleExample),
 ) -> List(PuzzleExample) {
-  let input = simplifile.read(local_example_input_file(year, day, part, number))
-  let answer =
-    simplifile.read(local_example_answer_file(year, day, part, number))
+  let input = simplifile.read(local_example_input_file(puzzle, part, number))
+  let answer = simplifile.read(local_example_answer_file(puzzle, part, number))
   case input, answer {
     Ok(i), Ok(a) ->
-      collect_examples_from_local_files(year, day, part, number + 1, [
+      collect_examples_from_local_files(puzzle, part, number + 1, [
         PuzzleExample(number, i, a),
         ..collected
       ])
@@ -77,10 +72,8 @@ fn collect_examples_from_local_files(
       io.println_error(
         "Example "
         <> int.to_string(number)
-        <> " for y"
-        <> int.to_string(year)
-        <> "d"
-        <> int.to_string(day)
+        <> " for "
+        <> advent_of_code.day_string(puzzle)
         <> " is messed up.",
       )
       collected
@@ -89,26 +82,22 @@ fn collect_examples_from_local_files(
 }
 
 fn write_examples_to_local_file(
-  year: Int,
-  day: Int,
+  puzzle: PuzzleId,
   part: PuzzlePart,
   examples: List(PuzzleExample),
 ) -> Nil {
-  let date_str = "y" <> int.to_string(year) <> "d" <> int.to_string(day)
-  local_data.create_local_part_folder_if_not_exists(year, day, part)
+  let date_str = advent_of_code.day_string(puzzle)
+  local_data.create_local_part_folder_if_not_exists(puzzle, part)
   let success =
     examples
     |> list.all(fn(example) {
       let PuzzleExample(number, input, answer) = example
       let wrote_input =
-        simplifile.write(
-          local_example_input_file(year, day, part, number),
-          input,
-        )
+        simplifile.write(local_example_input_file(puzzle, part, number), input)
         |> result.is_ok
       let wrote_answer =
         simplifile.write(
-          local_example_answer_file(year, day, part, number),
+          local_example_answer_file(puzzle, part, number),
           answer,
         )
         |> result.is_ok
@@ -129,13 +118,12 @@ fn write_examples_to_local_file(
 }
 
 fn get_examples_from_website_and_human(
-  year: Int,
-  day: Int,
+  puzzle: PuzzleId,
   part: PuzzlePart,
 ) -> Result(List(PuzzleExample), website.AdventOfCodeError) {
-  use puzzle_html_text <- result.try(website.get_from_website(
-    int.to_string(year) <> "/day/" <> int.to_string(day),
-  ))
+  use puzzle_html_text <- result.try(
+    website.get_from_website(advent_of_code.day_path(puzzle)),
+  )
   let example_candidates =
     html_parser.as_list(puzzle_html_text)
     |> find_code_blocks_text(part)
@@ -143,7 +131,7 @@ fn get_examples_from_website_and_human(
     advent_of_code.Part1 -> example_candidates
     advent_of_code.Part2 ->
       list.append(
-        get_examples_or_ask_human(year, day, advent_of_code.Part1)
+        get_examples_or_ask_human(puzzle, advent_of_code.Part1)
           |> result.unwrap([])
           |> list.map(fn(e) { e.input }),
         example_candidates,

@@ -1,4 +1,4 @@
-import common/adventofcode/advent_of_code.{type PuzzlePart}
+import common/adventofcode/advent_of_code.{type PuzzleId, type PuzzlePart}
 import common/adventofcode/answer
 import common/adventofcode/examples
 import common/adventofcode/input
@@ -11,16 +11,14 @@ import gleam/list
 import gleam/result
 
 pub fn solve_advent(
-  year: Int,
-  day: Int,
+  puzzle: PuzzleId,
   part1: fn(String) -> String,
   part2: fn(String) -> String,
 ) -> Result(Bool, website.AdventOfCodeError) {
-  let day_string = "y" <> int.to_string(year) <> "d" <> int.to_string(day)
+  let day_string = advent_of_code.day_string(puzzle)
   io.println("Running solution for " <> day_string)
   use part1_solved <- result.try(solve_advent_part(
-    year,
-    day,
+    puzzle,
     advent_of_code.Part1,
     part1,
   ))
@@ -29,7 +27,7 @@ pub fn solve_advent(
     Ok(False)
   })
   io.println(day_string <> " part 1 correct!")
-  solve_advent_part(year, day, advent_of_code.Part2, part2)
+  solve_advent_part(puzzle, advent_of_code.Part2, part2)
   |> result.map(fn(part2_solved) {
     case part2_solved {
       True -> io.println(day_string <> " part 2 correct!")
@@ -40,12 +38,11 @@ pub fn solve_advent(
 }
 
 fn solve_advent_part(
-  year: Int,
-  day: Int,
+  puzzle: PuzzleId,
   part: PuzzlePart,
   solution: fn(String) -> String,
 ) -> Result(Bool, website.AdventOfCodeError) {
-  use examples <- result.try(examples.get_examples_or_ask_human(year, day, part))
+  use examples <- result.try(examples.get_examples_or_ask_human(puzzle, part))
   let pass_examples =
     examples
     |> list.map(fn(example) {
@@ -73,6 +70,6 @@ fn solve_advent_part(
     })
     |> list.all(function.identity)
   use <- bool.guard(pass_examples, Ok(False))
-  use input <- result.try(input.get_puzzle_input(year, day))
-  answer.submit_answer(year, day, part, solution(input))
+  use input <- result.try(input.get_puzzle_input(puzzle))
+  answer.submit_answer(puzzle, part, solution(input))
 }
