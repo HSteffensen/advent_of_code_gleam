@@ -52,7 +52,13 @@ pub fn submit_answer(
       })
     }
   }
-  use is_known_correct <- result.try(is_known_correct)
+  use is_known_correct <- result.try(
+    is_known_correct
+    |> result.map_error(fn(e) {
+      io.println("Failed to get the correct answer.")
+      e
+    }),
+  )
   use <- bool.lazy_guard(is_known_correct, fn() {
     io.println("Answer known to be correct from previous submission.")
     Ok(True)
@@ -121,7 +127,7 @@ fn get_website_correct_answer(
     }
     |> list.drop_while(fn(element) {
       case element {
-        html_parser.Content("Your puzzle answer was") -> False
+        html_parser.Content("Your puzzle answer was ") -> False
         _ -> True
       }
     })

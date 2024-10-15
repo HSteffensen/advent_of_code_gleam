@@ -22,7 +22,7 @@ pub fn solve_advent(
     advent_of_code.Part1,
     part1,
   ))
-  use <- bool.lazy_guard(part1_solved, fn() {
+  use <- bool.lazy_guard(!part1_solved, fn() {
     io.println(day_string <> " part 1 wrong.")
     Ok(False)
   })
@@ -69,7 +69,7 @@ fn solve_advent_part(
       pass_example
     })
     |> list.all(function.identity)
-  use <- bool.guard(pass_examples, Ok(False))
+  use <- bool.guard(!pass_examples, Ok(False))
   use input <- result.try(input.get_puzzle_input(puzzle))
   answer.submit_answer(puzzle, part, solution(input))
 }
