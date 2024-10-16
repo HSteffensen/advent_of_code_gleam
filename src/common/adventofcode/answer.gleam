@@ -2,8 +2,6 @@ import common/adventofcode/advent_of_code.{type PuzzleId, type PuzzlePart}
 import common/adventofcode/local_data
 import common/adventofcode/website
 import gleam/bool
-import gleam/erlang/process
-import gleam/int
 import gleam/io
 import gleam/list
 import gleam/option
@@ -11,8 +9,6 @@ import gleam/result
 import gleam/string
 import html_parser
 import simplifile
-import tempo/datetime
-import tempo/period
 
 fn local_wrong_answers_file(puzzle: PuzzleId, part: PuzzlePart) -> String {
   local_data.local_part_folder(puzzle, part) <> "wrong_answers.txt"
@@ -20,10 +16,6 @@ fn local_wrong_answers_file(puzzle: PuzzleId, part: PuzzlePart) -> String {
 
 fn local_correct_answer_file(puzzle: PuzzleId, part: PuzzlePart) -> String {
   local_data.local_part_folder(puzzle, part) <> "correct_answer.txt"
-}
-
-fn local_submission_time_file() -> String {
-  local_data.local_data_folder() <> "last_submission_time.txt"
 }
 
 pub fn submit_answer(
@@ -71,8 +63,6 @@ pub fn submit_answer(
     Ok(is_known_correct |> option.unwrap(True))
   })
 
-  // check one minute between submissions, sleep until minute is ended
-  ensure_one_minute_between_submissions()
   // submit answer to AoC website. check if correct or wrong. if wrong, append to wrong answers file. if right, write to correct answer file.
 
   use is_correct_submitted <- result.try(
@@ -151,31 +141,6 @@ fn get_website_correct_answer(
     Ok(html_parser.Content(text)) -> option.Some(text)
     _ -> option.None
   })
-}
-
-fn ensure_one_minute_between_submissions() -> Nil {
-  case simplifile.read(local_submission_time_file()) {
-    Error(_) -> Nil
-    Ok(time_string) ->
-      case datetime.from_string(time_string) {
-        Error(_) -> Nil
-        Ok(last_submission_time) -> {
-          let now = datetime.now_utc()
-          let sleep_millis =
-            {
-              datetime.difference(now, last_submission_time)
-              |> period.as_duration
-            }.nanoseconds
-            / 1000
-          io.println(
-            "Waiting "
-            <> int.to_string({ sleep_millis / 1000 })
-            <> " seconds before the next submission because of the 1 minute waiting period...",
-          )
-          process.sleep(sleep_millis)
-        }
-      }
-  }
 }
 
 fn submit_answer_to_website(

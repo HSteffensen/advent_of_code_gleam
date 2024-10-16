@@ -1,7 +1,6 @@
 import common/adventofcode/advent_of_code
 import common/adventofcode/solution
 import gleam/int
-import gleam/io
 import gleam/list
 import gleam/string
 
