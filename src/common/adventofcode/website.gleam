@@ -81,7 +81,7 @@ fn ensure_time_between_submissions() -> Nil {
           let time_since_submission =
             datetime.difference(now, last_submission_time)
             |> period.as_duration
-          let waiting_period = duration.minutes(5)
+          let waiting_period = duration.minutes(1)
           let sleep_millis =
             duration.decrease(waiting_period, time_since_submission).nanoseconds
             / 1_000_000
