@@ -83,8 +83,8 @@ fn ensure_time_between_submissions() -> Nil {
             |> period.as_duration
           let waiting_period = duration.minutes(1)
           let sleep_millis =
-            duration.decrease(waiting_period, time_since_submission).nanoseconds
-            / 1_000_000
+            duration.decrease(waiting_period, time_since_submission)
+            |> duration.as_milliseconds
           case sleep_millis > 0 {
             False -> Nil
             True -> {
