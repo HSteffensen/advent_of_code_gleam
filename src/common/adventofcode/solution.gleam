@@ -4,11 +4,13 @@ import common/adventofcode/examples
 import common/adventofcode/input
 import common/adventofcode/website
 import gleam/bool
+import gleam/float
 import gleam/function
 import gleam/int
 import gleam/io
 import gleam/list
 import gleam/result
+import tempo/duration
 
 pub fn solve_advent(
   puzzle: PuzzleId,
@@ -71,5 +73,18 @@ fn solve_advent_part(
     |> list.all(function.identity)
   use <- bool.guard(!pass_examples, Ok(False))
   use input <- result.try(input.get_puzzle_input(puzzle))
-  answer.submit_answer(puzzle, part, solution(input))
+  let timer = duration.start_monotonic()
+  let answer = solution(input)
+  let solution_time = timer |> duration.stop_monotonic()
+  io.println(
+    "Took "
+    <> float.to_string(
+      duration.as_microseconds(solution_time)
+      |> int.to_float
+      |> float.divide(1_000_000.0)
+      |> result.unwrap(-1.0),
+    )
+    <> " seconds to run the solution.",
+  )
+  answer.submit_answer(puzzle, part, answer)
 }
