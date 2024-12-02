@@ -44,6 +44,8 @@ fn solve_advent_part(
   part: PuzzlePart,
   solution: fn(String) -> String,
 ) -> Result(Bool, website.AdventOfCodeError) {
+  let part_string = advent_of_code.part_int_string(part)
+  io.println("Running examples for part " <> part_string <> ".")
   use examples <- result.try(examples.get_examples_or_ask_human(puzzle, part))
   let pass_examples =
     examples
@@ -72,7 +74,9 @@ fn solve_advent_part(
     })
     |> list.all(function.identity)
   use <- bool.guard(!pass_examples, Ok(False))
+  io.println("Passed all examples for part " <> part_string <> "!")
   use input <- result.try(input.get_puzzle_input(puzzle))
+  io.println("Running solution for part " <> part_string <> ".")
   let timer = duration.start_monotonic()
   let answer = solution(input)
   let solution_time = timer |> duration.stop_monotonic()
@@ -84,7 +88,10 @@ fn solve_advent_part(
       |> float.divide(1_000_000.0)
       |> result.unwrap(-1.0),
     )
-    <> " seconds to run the solution.",
+    <> " seconds to run part "
+    <> advent_of_code.part_int_string(part)
+    <> ".",
   )
+  io.println("Answer: " <> answer)
   answer.submit_answer(puzzle, part, answer)
 }
