@@ -64,15 +64,15 @@ fn parse_input_2(input: String) -> List(MulInstruction) {
         True, regexp.Match(_, [option.Some(a), option.Some(b)]) -> {
           let assert Ok(a_int) = int.parse(a)
           let assert Ok(b_int) = int.parse(b)
-          #(True, MulInstruction(a_int, b_int))
+          #(True, Ok(MulInstruction(a_int, b_int)))
         }
-        True, regexp.Match("don't()", _) -> #(False, MulInstruction(0, 0))
-        _, regexp.Match("do()", _) -> #(True, MulInstruction(0, 0))
-        False, _ -> #(False, MulInstruction(0, 0))
+        _, regexp.Match("don't()", _) -> #(False, Error(Nil))
+        _, regexp.Match("do()", _) -> #(True, Error(Nil))
+        False, _ -> #(False, Error(Nil))
         _, _ -> panic as "unreachable"
       }
     })
-  parsed
+  parsed |> result.values
 }
 
 fn solve_part_2(input: String) -> String {

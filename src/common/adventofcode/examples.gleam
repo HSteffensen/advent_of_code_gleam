@@ -51,6 +51,7 @@ pub fn get_examples_or_ask_human(
     }
     [_, ..] -> Ok(examples)
   }
+  |> result.map(list.sort(_, fn(a, b) { int.compare(a.number, b.number) }))
 }
 
 fn collect_examples_from_local_files(
