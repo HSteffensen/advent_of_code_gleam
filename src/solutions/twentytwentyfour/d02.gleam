@@ -42,12 +42,12 @@ fn solve_part_1(input: String) -> String {
   |> int.to_string
 }
 
-fn strictly_increasing_by_at_most(l: List(Int), jump_max: Int) -> Bool {
-  l
+fn strictly_increasing_by_at_most(numbers: List(Int), jump_max: Int) -> Bool {
+  numbers
   |> list.window_by_2
-  |> list.fold(True, fn(acc, p) {
-    let #(a, b) = p
-    acc && a < b && b - a <= jump_max
+  |> list.all(fn(two) {
+    let #(a, b) = two
+    a < b && b - a <= jump_max
   })
 }
 
@@ -72,10 +72,10 @@ fn solve_part_2(input: String) -> String {
   |> int.to_string
 }
 
-fn each_removed(l: List(t)) -> List(List(t)) {
-  list.range(0, list.length(l))
+fn each_removed(numbers: List(t)) -> List(List(t)) {
+  list.range(0, list.length(numbers))
   |> list.map(fn(i) {
-    l
+    numbers
     |> list.index_map(fn(x, j) { #(j, x) })
     |> list.filter_map(fn(x) {
       let #(j, x) = x
