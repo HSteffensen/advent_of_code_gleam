@@ -30,17 +30,6 @@ fn parse_input(input: String) -> List(Particle) {
   })
 }
 
-fn particle_string(output: List(Particle)) -> String {
-  output
-  |> list.map(fn(p) {
-    case p {
-      Lower(c) -> c
-      Upper(c) -> string.uppercase(c)
-    }
-  })
-  |> string.concat
-}
-
 fn solve_part_1(input: String) -> String {
   input |> parse_input |> part_1_full |> list.length |> int.to_string
 }
@@ -65,6 +54,6 @@ fn part_1_single_pass(
   }
 }
 
-fn solve_part_2(input: String) -> String {
-  todo
+fn solve_part_2(_input: String) -> String {
+  "todo"
 }
