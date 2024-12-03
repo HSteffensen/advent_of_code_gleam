@@ -10,6 +10,7 @@ import gleam/int
 import gleam/io
 import gleam/list
 import gleam/result
+import gleam/string
 import tempo/duration
 
 pub fn solve_advent(
@@ -56,7 +57,7 @@ fn solve_advent_part(
         answer: example_answer,
       ) = example
       let solution_answer = solution(example_input)
-      let pass_example = solution_answer == example_answer
+      let pass_example = solution_answer == { example_answer |> string.trim }
       case pass_example {
         False ->
           io.println(
