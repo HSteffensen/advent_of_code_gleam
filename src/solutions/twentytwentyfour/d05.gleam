@@ -62,7 +62,8 @@ fn solve_part_1(input: String) -> String {
 }
 
 fn fix_print_job(print_job: String, rules: List(PageRule)) -> String {
-  rules |> list.fold(print_job, fix_print_job_with_rule)
+  use <- bool.guard(rules |> list.all(follows_rule(print_job, _)), print_job)
+  rules |> list.fold(print_job, fix_print_job_with_rule) |> fix_print_job(rules)
 }
 
 fn fix_print_job_with_rule(print_job: String, rule: PageRule) -> String {
@@ -83,19 +84,6 @@ fn solve_part_2(input: String) -> String {
   |> list.filter(fn(job) {
     input.rules |> list.all(follows_rule(job, _)) |> bool.negate
   })
-  |> list.map(fix_print_job(_, input.rules))
-  |> list.map(fix_print_job(_, input.rules))
-  |> list.map(fix_print_job(_, input.rules))
-  |> list.map(fix_print_job(_, input.rules))
-  |> list.map(fix_print_job(_, input.rules))
-  |> list.map(fix_print_job(_, input.rules))
-  |> list.map(fix_print_job(_, input.rules))
-  |> list.map(fix_print_job(_, input.rules))
-  |> list.map(fix_print_job(_, input.rules))
-  |> list.map(fix_print_job(_, input.rules))
-  |> list.map(fix_print_job(_, input.rules))
-  |> list.map(fix_print_job(_, input.rules))
-  |> list.map(fix_print_job(_, input.rules))
   |> list.map(fix_print_job(_, input.rules))
   |> list.map(middle_number)
   |> int.sum
