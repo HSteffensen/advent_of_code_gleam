@@ -31,7 +31,7 @@ pub fn get_session_or_ask_human() -> Result(String, SessionCookieError) {
 }
 
 fn get_session_from_local_file() -> Result(String, Nil) {
-  simplifile.read(local_session_file()) |> result.nil_error
+  simplifile.read(local_session_file()) |> result.replace_error(Nil)
 }
 
 fn write_session_to_local_file(session: String) -> Nil {
@@ -50,7 +50,7 @@ fn get_session_from_human_input() -> Result(String, Nil) {
   erlang.get_line(
     "Session cookie missing or invalid. Go to `https://adventofcode.com` and use browser tools to get the session cookie, then paste here:\n",
   )
-  |> result.nil_error
+  |> result.replace_error(Nil)
 }
 
 fn check_session(session: String) -> Result(String, Nil) {
@@ -59,7 +59,7 @@ fn check_session(session: String) -> Result(String, Nil) {
     r
     |> request.set_cookie("session", session)
     |> set_user_agent
-  use response <- result.try(httpc.send(request) |> result.nil_error)
+  use response <- result.try(httpc.send(request) |> result.replace_error(Nil))
   case response.status {
     200 -> Ok(session)
     _ -> Error(Nil)

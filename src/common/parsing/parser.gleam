@@ -20,7 +20,7 @@ pub fn literal(
       True ->
         Ok(OngoingStringParser(
           value,
-          input |> string.drop_left(string.length(value)),
+          input |> string.drop_start(string.length(value)),
         ))
       False ->
         Error(Expected(value, string.slice(input, 0, string.length(value))))

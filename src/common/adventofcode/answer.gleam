@@ -97,7 +97,7 @@ fn get_known_correct_answer(
   part: PuzzlePart,
 ) -> Result(String, Nil) {
   simplifile.read(local_correct_answer_file(puzzle, part))
-  |> result.nil_error
+  |> result.replace_error(Nil)
 }
 
 fn get_website_correct_answer(

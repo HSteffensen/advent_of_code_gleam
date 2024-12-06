@@ -24,7 +24,7 @@ pub fn get_puzzle_input(
 }
 
 fn get_input_from_local_file(puzzle: PuzzleId) -> Result(String, Nil) {
-  simplifile.read(local_input_file(puzzle)) |> result.nil_error
+  simplifile.read(local_input_file(puzzle)) |> result.replace_error(Nil)
 }
 
 fn write_input_to_local_file(puzzle: PuzzleId, input: String) -> Nil {
