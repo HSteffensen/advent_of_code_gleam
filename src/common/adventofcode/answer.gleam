@@ -97,6 +97,7 @@ fn get_known_correct_answer(
   part: PuzzlePart,
 ) -> Result(String, Nil) {
   simplifile.read(local_correct_answer_file(puzzle, part))
+  |> result.map(string.trim)
   |> result.replace_error(Nil)
 }
 
