@@ -172,18 +172,11 @@ fn solve_part_1(input: String) -> String {
 
 fn solve_part_2(input: String) -> String {
   let guard_map = parse_input(input)
-  guard_map.map
-  |> dict.to_list
-  |> list.filter(fn(entry) {
-    let #(p, item) = entry
-    case p == guard_map.guard_pos, item {
-      True, _ -> False
-      False, Empty -> True
-      _, Obstacle -> False
-    }
-  })
-  |> list.map(fn(entry) {
-    let #(p, _) = entry
+  let #(positions, _) = parse_input(input) |> step_guard_until_gone_or_loop
+  positions
+  |> list.unique
+  |> list.filter(fn(p) { p != guard_map.guard_pos })
+  |> list.map(fn(p) {
     GuardMap(
       guard_map.guard_pos,
       guard_map.guard_dir,
