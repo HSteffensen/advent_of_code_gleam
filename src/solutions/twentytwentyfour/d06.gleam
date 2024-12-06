@@ -163,20 +163,38 @@ fn step_guard_until_gone_or_loop(guard_map: GuardMap) -> #(List(Pos), Bool) {
 }
 
 fn solve_part_1(input: String) -> String {
-  parse_input(input)
-  |> yielder.unfold(fn(map) {
-    let next = advance_guard(map)
-    case next.guard_gone {
-      False -> yielder.Next(next.guard_pos, next)
-      True -> yielder.Done
-    }
-  })
-  |> yielder.to_list
+  let #(positions, _) = parse_input(input) |> step_guard_until_gone_or_loop
+  positions
   |> list.unique
   |> list.length
   |> int.to_string
 }
 
 fn solve_part_2(input: String) -> String {
-  todo
+  let guard_map = parse_input(input)
+  guard_map.map
+  |> dict.to_list
+  |> list.filter(fn(entry) {
+    let #(p, item) = entry
+    case p == guard_map.guard_pos, item {
+      True, _ -> False
+      False, Empty -> True
+      _, Obstacle -> False
+    }
+  })
+  |> list.map(fn(entry) {
+    let #(p, _) = entry
+    GuardMap(
+      guard_map.guard_pos,
+      guard_map.guard_dir,
+      guard_map.guard_gone,
+      guard_map.map |> dict.insert(p, Obstacle),
+    )
+  })
+  |> list.filter(fn(gm) {
+    let #(_, looping) = step_guard_until_gone_or_loop(gm)
+    looping
+  })
+  |> list.length
+  |> int.to_string
 }
