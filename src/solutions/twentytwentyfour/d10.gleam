@@ -4,7 +4,6 @@ import common/position.{type Pos2d, Pos2d}
 import gleam/dict.{type Dict}
 import gleam/int
 import gleam/list
-import gleam/set.{type Set}
 import gleam/string
 
 pub fn main() {
@@ -45,12 +44,7 @@ fn trailheads(grid: Dict(Pos2d, Int)) -> List(Pos2d) {
   })
 }
 
-fn count_trail_ends_dfs(
-  grid: Dict(Pos2d, Int),
-  pos: Pos2d,
-  visited: Set(Pos2d),
-) -> List(Pos2d) {
-  let visited = visited |> set.insert(pos)
+fn count_trail_ends_dfs(grid: Dict(Pos2d, Int), pos: Pos2d) -> List(Pos2d) {
   case grid |> dict.get(pos) {
     Error(_) -> panic as "unreachable"
     Ok(9) -> [pos]
@@ -58,29 +52,24 @@ fn count_trail_ends_dfs(
       pos
       |> position.neighbors4
       |> list.filter(fn(p2) {
-        case set.contains(visited, p2), dict.get(grid, p2) {
-          False, Ok(h2) if h2 == height + 1 -> True
-          _, _ -> False
+        case dict.get(grid, p2) {
+          Ok(h2) if h2 == height + 1 -> True
+          _ -> False
         }
       })
-      |> list.flat_map(count_trail_ends_dfs(grid, _, visited))
+      |> list.flat_map(count_trail_ends_dfs(grid, _))
   }
 }
 
 fn count_trail_ends(grid: Dict(Pos2d, Int)) -> Int {
   trailheads(grid)
-  |> list.map(count_trail_ends_dfs(grid, _, set.new()))
+  |> list.map(count_trail_ends_dfs(grid, _))
   |> list.map(list.unique)
   |> list.map(list.length)
   |> int.sum
 }
 
-fn count_trails_dfs(
-  grid: Dict(Pos2d, Int),
-  pos: Pos2d,
-  visited: Set(Pos2d),
-) -> Int {
-  let visited = visited |> set.insert(pos)
+fn count_trails_dfs(grid: Dict(Pos2d, Int), pos: Pos2d) -> Int {
   case grid |> dict.get(pos) {
     Error(_) -> panic as "unreachable"
     Ok(9) -> 1
@@ -88,19 +77,19 @@ fn count_trails_dfs(
       pos
       |> position.neighbors4
       |> list.filter(fn(p2) {
-        case set.contains(visited, p2), dict.get(grid, p2) {
-          False, Ok(h2) if h2 == height + 1 -> True
-          _, _ -> False
+        case dict.get(grid, p2) {
+          Ok(h2) if h2 == height + 1 -> True
+          _ -> False
         }
       })
-      |> list.map(count_trails_dfs(grid, _, visited))
+      |> list.map(count_trails_dfs(grid, _))
       |> int.sum
   }
 }
 
 fn count_trails(grid: Dict(Pos2d, Int)) -> Int {
   trailheads(grid)
-  |> list.map(count_trails_dfs(grid, _, set.new()))
+  |> list.map(count_trails_dfs(grid, _))
   |> int.sum
 }
 
