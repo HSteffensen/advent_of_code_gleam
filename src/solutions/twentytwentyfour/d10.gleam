@@ -69,27 +69,10 @@ fn count_trail_ends(grid: Dict(Pos2d, Int)) -> Int {
   |> int.sum
 }
 
-fn count_trails_dfs(grid: Dict(Pos2d, Int), pos: Pos2d) -> Int {
-  case grid |> dict.get(pos) {
-    Error(_) -> panic as "unreachable"
-    Ok(9) -> 1
-    Ok(height) ->
-      pos
-      |> position.neighbors4
-      |> list.filter(fn(p2) {
-        case dict.get(grid, p2) {
-          Ok(h2) if h2 == height + 1 -> True
-          _ -> False
-        }
-      })
-      |> list.map(count_trails_dfs(grid, _))
-      |> int.sum
-  }
-}
-
 fn count_trails(grid: Dict(Pos2d, Int)) -> Int {
   trailheads(grid)
-  |> list.map(count_trails_dfs(grid, _))
+  |> list.map(count_trail_ends_dfs(grid, _))
+  |> list.map(list.length)
   |> int.sum
 }
 
