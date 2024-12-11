@@ -59,7 +59,7 @@ pub fn submit_answer(
   )
 
   use <- bool.lazy_guard(is_known_correct |> option.is_some, fn() {
-    io.println("Answer known to be correct from previous submission.")
+    io.println("The correct answer is known from a previous submission.")
     Ok(is_known_correct |> option.unwrap(True))
   })
 

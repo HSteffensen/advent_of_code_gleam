@@ -1,17 +1,20 @@
 import common/adventofcode/advent_of_code
 import common/adventofcode/auth
 import common/adventofcode/local_data
+import gleam/bool
 import gleam/erlang/process
 import gleam/http
 import gleam/http/request
 import gleam/httpc
 import gleam/int
 import gleam/io
+import gleam/order
 import gleam/result
 import simplifile
+import tempo/date
 import tempo/datetime
 import tempo/duration
-import tempo/period
+import tempo/time
 
 pub type AdventOfCodeError {
   SessionError(auth.SessionCookieError)
@@ -42,6 +45,8 @@ pub fn post_answer(
   answer: String,
 ) -> Result(String, AdventOfCodeError) {
   ensure_time_between_submissions()
+  write_submission_time()
+  use _ <- result.try(Ok(""))
   use session <- result.try(
     auth.get_session_or_ask_human() |> result.map_error(SessionError),
   )
@@ -78,10 +83,20 @@ fn ensure_time_between_submissions() -> Nil {
         Error(_) -> Nil
         Ok(last_submission_time) -> {
           let now = datetime.now_utc()
+          use <- bool.guard(
+            date.compare(
+              last_submission_time |> datetime.get_date,
+              now |> datetime.get_date,
+            )
+              != order.Eq,
+            Nil,
+          )
           let time_since_submission =
-            datetime.as_period(now, last_submission_time)
-            |> period.as_duration
-          let waiting_period = duration.minutes(1)
+            time.difference(
+              now |> datetime.get_time,
+              last_submission_time |> datetime.get_time,
+            )
+          let waiting_period = duration.seconds(61)
           let sleep_millis =
             duration.decrease(waiting_period, time_since_submission)
             |> duration.as_milliseconds
