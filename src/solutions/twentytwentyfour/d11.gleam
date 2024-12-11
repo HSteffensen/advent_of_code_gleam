@@ -4,7 +4,6 @@ import gleam/bool
 import gleam/dict
 import gleam/float
 import gleam/int
-import gleam/io
 import gleam/list
 import gleam/result
 import gleam/string
@@ -41,21 +40,40 @@ fn next_stone(x: Int) -> List(Int) {
   }
 }
 
-fn blink(stones: List(Int), blinks_remaining: Int) -> List(Int) {
-  case blinks_remaining {
-    0 -> stones
-    _ ->
-      stones
-      |> list.map(next_stone)
-      |> list.map(blink(_, blinks_remaining - 1))
-      |> list.flatten
+fn blink_stone_count(
+  stone: Int,
+  blinks_remaining: Int,
+  cache: dict.Dict(#(Int, Int), Int),
+) -> #(dict.Dict(#(Int, Int), Int), Int) {
+  use <- bool.guard(blinks_remaining == 0, #(cache, 1))
+  case cache |> dict.get(#(stone, blinks_remaining)) {
+    Ok(count) -> #(cache, count)
+    Error(Nil) -> {
+      let #(cache, counts) =
+        next_stone(stone)
+        |> list.map_fold(cache, fn(cache, new_stone) {
+          blink_stone_count(new_stone, blinks_remaining - 1, cache)
+        })
+      let count = counts |> int.sum
+      let cache = cache |> dict.insert(#(stone, blinks_remaining), count)
+      #(cache, count)
+    }
   }
 }
 
+fn blink_count_stones(stones: List(Int), blinks: Int) -> Int {
+  let #(_, counts) =
+    stones
+    |> list.map_fold(dict.new(), fn(cache, stone) {
+      blink_stone_count(stone, blinks, cache)
+    })
+  counts |> int.sum
+}
+
 fn solve_part_1(input: String) -> String {
-  parse_input(input) |> blink(25) |> list.length |> int.to_string
+  parse_input(input) |> blink_count_stones(25) |> int.to_string
 }
 
 fn solve_part_2(input: String) -> String {
-  todo
+  parse_input(input) |> blink_count_stones(75) |> int.to_string
 }
