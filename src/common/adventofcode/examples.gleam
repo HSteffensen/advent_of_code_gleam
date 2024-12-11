@@ -162,6 +162,24 @@ fn get_examples_from_website_and_human(
       let #(i, a) = m
       #(n + 1, PuzzleExample(n, i, a))
     })
+  let examples = case examples {
+    [] ->
+      case
+        erlang.get_line(
+          "No examples found. If there are truly no examples, ensure that the code can handle an empty input to give a '0' output and type 'yes':",
+        )
+      {
+        Ok(answer) -> {
+          let answer = string.trim(answer)
+          case answer {
+            "yes" -> [PuzzleExample(1, "", "0")]
+            _ -> []
+          }
+        }
+        Error(_) -> []
+      }
+    _ -> examples
+  }
   case examples {
     [] -> {
       local_data.create_local_part_folder_if_not_exists(puzzle, part)
