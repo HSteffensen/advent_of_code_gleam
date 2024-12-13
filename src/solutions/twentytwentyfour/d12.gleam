@@ -4,9 +4,7 @@ import common/position.{type Pos2d, Pos2d}
 import gleam/bool
 import gleam/dict.{type Dict}
 import gleam/int
-import gleam/io
 import gleam/list
-import gleam/result
 import gleam/set.{type Set}
 import gleam/string
 
@@ -31,8 +29,12 @@ fn parse_input(input: String) -> Dict(Pos2d, String) {
   |> dict.from_list
 }
 
+type Border {
+  Border(inner: Pos2d, outer: Pos2d)
+}
+
 type Region {
-  Region(plant: String, positions: Set(Pos2d), borders: Set(#(Pos2d, Pos2d)))
+  Region(plant: String, positions: Set(Pos2d), borders: Set(Border))
 }
 
 fn combine_regions(a: Region, b: Region) -> Region {
@@ -81,7 +83,7 @@ fn connect_region(
               Region(
                 region.plant,
                 region.positions,
-                region.borders |> set.insert(#(pos, pos2)),
+                region.borders |> set.insert(Border(pos, pos2)),
               )
             Ok(region2) -> combine_regions(region, region2)
           }
@@ -104,6 +106,55 @@ fn region_price(region: Region) -> Int {
   { region.positions |> set.size } * { region.borders |> set.size }
 }
 
+fn distinct_sides_count(edges: Set(Border)) -> Int {
+  use <- bool.guard(edges |> set.is_empty, 0)
+
+  let edges_list =
+    edges
+    |> set.to_list
+  let horizontal_sides =
+    edges_list
+    |> list.filter(fn(p) { p.inner.y == p.outer.y })
+    |> list.group(fn(p) { #(p.inner.x, p.outer.x) })
+    |> dict.values
+    |> list.map(fn(pairs) {
+      {
+        pairs
+        |> list.sort(fn(a, b) { int.compare(a.inner.y, b.inner.y) })
+        |> list.window_by_2
+        |> list.count(fn(p) {
+          let #(a, b) = p
+          a.inner.y != b.inner.y - 1
+        })
+      }
+      + 1
+    })
+    |> int.sum
+  let vertical_sides =
+    edges_list
+    |> list.filter(fn(p) { p.inner.x == p.outer.x })
+    |> list.group(fn(p) { #(p.inner.y, p.outer.y) })
+    |> dict.values
+    |> list.map(fn(pairs) {
+      {
+        pairs
+        |> list.sort(fn(a, b) { int.compare(a.inner.x, b.inner.x) })
+        |> list.window_by_2
+        |> list.count(fn(p) {
+          let #(a, b) = p
+          a.inner.x != b.inner.x - 1
+        })
+      }
+      + 1
+    })
+    |> int.sum
+  horizontal_sides + vertical_sides
+}
+
+fn region_price_2(region: Region) -> Int {
+  { region.positions |> set.size } * { distinct_sides_count(region.borders) }
+}
+
 fn solve_part_1(input: String) -> String {
   let grid = parse_input(input)
   build_regions(grid)
@@ -113,5 +164,9 @@ fn solve_part_1(input: String) -> String {
 }
 
 fn solve_part_2(input: String) -> String {
-  todo
+  let grid = parse_input(input)
+  build_regions(grid)
+  |> list.map(region_price_2)
+  |> int.sum
+  |> int.to_string
 }
