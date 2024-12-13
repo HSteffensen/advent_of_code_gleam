@@ -1,5 +1,3 @@
-import tempo
-
 pub type Pos2d {
   Pos2d(x: Int, y: Int)
 }

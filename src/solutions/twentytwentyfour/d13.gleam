@@ -5,6 +5,7 @@ import gleam/bool
 import gleam/int
 import gleam/list
 import gleam/string
+import gleam_community/maths/arithmetics
 
 pub fn main() {
   solution.solve_advent(
@@ -39,44 +40,53 @@ fn parse_input(input: String) -> List(ClawMachine) {
 }
 
 fn find_cheapest_solve(machine: ClawMachine) -> Result(#(Int, Int), Nil) {
-  find_cheapest_solve_helper(machine, 0, Error(Nil))
-}
-
-fn find_cheapest_solve_helper(
-  machine: ClawMachine,
-  a_presses: Int,
-  cheapest_so_far: Result(#(Int, Int), Nil),
-) -> Result(#(Int, Int), Nil) {
-  use <- bool.guard(a_presses > 100, cheapest_so_far)
   let ClawMachine(Pos2d(ax, ay), Pos2d(bx, by), Pos2d(px, py)) = machine
-  let px = px - { a_presses * ax }
-  let py = py - { a_presses * ay }
-  let b_presses = px / bx
-  case px % bx, py % by, b_presses == { py / by }, cheapest_so_far {
-    0, 0, True, Error(Nil) -> {
-      find_cheapest_solve_helper(
-        machine,
-        a_presses + 1,
-        Ok(#(a_presses, b_presses)),
-      )
-    }
-    0, 0, True, Ok(#(cheap_a, cheap_b)) -> {
-      let current_cost = a_presses * 3 + b_presses
-      let cheapest_cost = cheap_a * 3 + cheap_b
-      use <- bool.guard(cheapest_cost <= current_cost, cheapest_so_far)
-      find_cheapest_solve_helper(
-        machine,
-        a_presses + 1,
-        Ok(#(a_presses, b_presses)),
-      )
-    }
-    _, _, _, _ ->
-      find_cheapest_solve_helper(machine, a_presses + 1, cheapest_so_far)
+  let gcd_x = arithmetics.gcd(ax, bx)
+  let gcd_y = arithmetics.gcd(ay, by)
+  use <- bool.guard(px % gcd_x != 0 || py % gcd_y != 0, Error(Nil))
+  let b_presses = {
+    { { py * ax } - { px * ay } } / { { by * ax } - { bx * ay } }
+  }
+  let a_presses = {
+    { px - { b_presses * bx } } / ax
+  }
+  case
+    a_presses < 0,
+    b_presses < 0,
+    a_presses * ax + b_presses * bx == px,
+    a_presses * ay + b_presses * by == py
+  {
+    False, False, True, True -> Ok(#(a_presses, b_presses))
+    _, _, _, _ -> Error(Nil)
   }
 }
 
 fn solve_part_1(input: String) -> String {
   parse_input(input)
+  |> list.filter_map(find_cheapest_solve)
+  |> list.filter_map(fn(it) {
+    let #(a, b) = it
+    case a <= 100, b <= 100 {
+      True, True -> Ok(3 * a + b)
+      _, _ -> Error(Nil)
+    }
+  })
+  |> int.sum
+  |> int.to_string
+}
+
+fn solve_part_2(input: String) -> String {
+  parse_input(input)
+  |> list.map(fn(machine) {
+    ClawMachine(
+      machine.a,
+      machine.b,
+      Pos2d(
+        machine.prize.x + 10_000_000_000_000,
+        machine.prize.y + 10_000_000_000_000,
+      ),
+    )
+  })
   |> list.filter_map(find_cheapest_solve)
   |> list.map(fn(it) {
     let #(a, b) = it
@@ -84,8 +94,4 @@ fn solve_part_1(input: String) -> String {
   })
   |> int.sum
   |> int.to_string
-}
-
-fn solve_part_2(input: String) -> String {
-  todo
 }
