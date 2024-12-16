@@ -18,6 +18,15 @@ pub fn rotate_right(dir: Direction) -> Direction {
   }
 }
 
+pub fn rotate_left(dir: Direction) -> Direction {
+  case dir {
+    North -> West
+    East -> North
+    South -> East
+    West -> South
+  }
+}
+
 pub fn step(pos: Pos2d, dir: Direction) -> Pos2d {
   case pos, dir {
     Pos2d(x, y), North -> Pos2d(x, y - 1)
