@@ -3,13 +3,10 @@ import common/adventofcode/solution
 import common/position.{type Pos2d, Pos2d}
 import common/util
 import gleam/bool
-import gleam/deque.{type Deque}
 import gleam/dict.{type Dict}
 import gleam/int
-import gleam/io
 import gleam/list
 import gleam/result
-import gleam/set.{type Set}
 import gleam/string
 
 pub fn main() {
@@ -46,13 +43,6 @@ fn parse_input(input: String) -> Dict(Pos2d, MazeEntity) {
   })
   |> list.flatten
   |> dict.from_list
-}
-
-type Cheat {
-  NotYet
-  Cheating1
-  Cheating2
-  Done
 }
 
 fn distances_to_end(grid: Dict(Pos2d, MazeEntity)) -> Dict(Pos2d, Int) {
