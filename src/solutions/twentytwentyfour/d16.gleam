@@ -4,7 +4,6 @@ import common/position.{type Direction, type Pos2d, Pos2d}
 import gleam/bool
 import gleam/dict.{type Dict}
 import gleam/int
-import gleam/io
 import gleam/list
 import gleam/result
 import gleam/set

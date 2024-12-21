@@ -3,9 +3,7 @@ import common/adventofcode/solution
 import gleam/bool
 import gleam/dict.{type Dict}
 import gleam/int
-import gleam/io
 import gleam/list
-import gleam/result
 import gleam/string
 
 pub fn main() {
